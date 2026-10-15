@@ -33,4 +33,13 @@ class CalculatorTest {
         List<Integer> nums = Arrays.asList(1, 2, 3, null, 4);
         assertEquals(c.sumUp(nums), c.addAll(nums));
     }
+
+    @Test 
+    void divide_shouldDivideTwoIntegers() {
+        Calculator c = new Calculator();
+        assertEquals(2, c.divide(10, 5));
+        assertEquals(-2, c.divide(-10, 5));
+        assertEquals(0, c.divide(0, 5));
+    }
+
 }
