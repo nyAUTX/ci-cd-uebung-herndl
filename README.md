@@ -37,6 +37,9 @@ Coverage-Report (für Übung 2 / SonarCloud): `target/site/jacoco/index.html`
 ---
 
 ## Übung 1 – Aufgaben (24 Punkte)
+- Autor: Fabian Herndl
+- Besonderheit: Ich habe Git bereits in mehreren Projekten verwendet und verwende GitHub auch für die Verwahrung meiner eigenen Hobbyprojekte.
+
 
 ### (1) Repository einrichten (4 P.) – **Fork & Clone / Template / ZIP**
 > Lege **dein eigenes Repo** mit dem Namen **`ci-cd-uebung-[Nachname]`** an und bringe das Starterprojekt hinein. Wähle **eine** der Varianten.
