@@ -1,0 +1,21 @@
+# Build output (the image builds its own JAR)
+target/
+
+# Git and CI metadata
+.git/
+.gitignore
+.github/
+
+# IDE / OS files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Documentation and screenshots are not needed in the image
+*.md
+Screenshots/
+
+# Docker files themselves
+Dockerfile
+.dockerignore
