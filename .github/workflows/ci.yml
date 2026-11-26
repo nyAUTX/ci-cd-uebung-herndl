@@ -3,10 +3,10 @@ name: CI
 on:
   push:
     branches: [ main ]
-    paths: [ 'pom.xml', 'src/**', '.github/workflows/**' ]
+    paths: [ 'pom.xml', 'src/**', 'Dockerfile', '.dockerignore', '.github/workflows/**' ]
   pull_request:
     branches: [ main ]
-    paths: [ 'pom.xml', 'src/**', '.github/workflows/**' ]
+    paths: [ 'pom.xml', 'src/**', 'Dockerfile', '.dockerignore', '.github/workflows/**' ]
   workflow_dispatch:
 
 permissions:
@@ -71,3 +71,49 @@ jobs:
         run: >
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
           -Dmaven.test.failure.ignore=true
+
+  docker:
+    name: "Docker Image (build & export)"
+    runs-on: ubuntu-latest
+    # Only package the app once tests and the Sonar analysis have passed
+    needs: [ build-test, sonar ]
+    env:
+      IMAGE_NAME: nyautx/ci-cd-uebung
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Compute short SHA
+        id: vars
+        run: echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      # Single-arch build (linux/amd64): only a single-platform image can be loaded
+      # into the local Docker engine (load: true) and exported with docker save.
+      - name: Build image ${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.short_sha }}
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          push: false
+          tags: ${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.short_sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test container
+        run: |
+          docker run --rm "$IMAGE_NAME:${{ steps.vars.outputs.short_sha }}" | tee output.txt
+          grep -q "Sum(2,3) = 5" output.txt
+
+      - name: Save image as tar
+        run: docker save -o "image-${{ steps.vars.outputs.short_sha }}.tar" "$IMAGE_NAME:${{ steps.vars.outputs.short_sha }}"
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: docker-image-${{ steps.vars.outputs.short_sha }}
+          path: image-${{ steps.vars.outputs.short_sha }}.tar
+          if-no-files-found: error
+          retention-days: 7
